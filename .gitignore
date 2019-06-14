@@ -1,0 +1,10 @@
+*.egg-info
+*.pyc
+.tox
+.vscode
+tags
+/.coverage
+/coverage.xml
+.cache
+.pytest_cache
+dist/

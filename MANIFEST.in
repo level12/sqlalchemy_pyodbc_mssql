@@ -1,0 +1,6 @@
+global-exclude *.pyc
+include *.rst todo.txt tox.ini
+include .circleci/config.yml
+include .circleci/pytest.ini
+exclude coverage.xml .coverage
+exclude pyp.ini
