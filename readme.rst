@@ -15,7 +15,7 @@ the layer is not MSSQL-specific, and so it has some limitations:
 
 - parameterized queries with GROUP BY will not always work ([source](https://github.com/mkleehammer/pyodbc/issues/479))
 - stored procedures (such as those called by the prepared statements in pyodbc) are limited to
-2100 parameters ([source](https://docs.microsoft.com/en-us/sql/sql-server/maximum-capacity-specifications-for-sql-server?view=sql-server-2017))
+  2100 parameters ([source](https://docs.microsoft.com/en-us/sql/sql-server/maximum-capacity-specifications-for-sql-server?view=sql-server-2017))
 
 SQLAlchemy has a PyODBC dialect for MSSQL usage, but it also shares these limitations.
 
