@@ -26,7 +26,10 @@ by rolling parameters into the query string itself (properly quoted, of course) 
 ODBC prepared statements, it does not share the above problems.
 
 sqlalchemy_pyodbc_mssql extends the built-in SQLAlchemy PyODBC dialect in order to work around
-these limits in a manner consistent with PyMSSQL's implementation.
+these limits in a manner consistent with PyMSSQL's implementation. Most queries are passed as-is to
+PyODBC to be prepared and executed normally. Those that would not work, due to the above issues,
+are given special treatment to avoid the limitations and keep the app developer from needing to
+keep track of when to apply workarounds.
 
 Usage
 -----
