@@ -16,6 +16,11 @@ log = logging.getLogger(__name__)
 
 
 class MssqlDialect_pyodbc_quoted(MSDialect_pyodbc):
+    # SQLAlchemy 1.4 requires this attribute, and the superclass sets
+    # it to True. But at runtime, we don't have this attribute unless
+    # we put it here.
+    supports_statement_cache = True
+
     @staticmethod  # noqa: C901
     def _quote_simple_value(value):
         """ Mainly from pymssql quoting, without the encoded output """
