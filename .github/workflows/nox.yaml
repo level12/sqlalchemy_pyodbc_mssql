@@ -1,0 +1,84 @@
+name: Nox
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+  workflow_dispatch:
+
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+
+jobs:
+  nox-other:
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        session: [audit, prek]
+
+    steps:
+      - uses: level12/coppy/gh-actions/nox-run@main
+        with:
+          nox-session: ${{ matrix.session }}
+
+  nox-pytest:
+    runs-on: ubuntu-latest
+
+    services:
+      mssql:
+        image: mcr.microsoft.com/mssql/server:2022-latest
+        env:
+          ACCEPT_EULA: Y
+          MSSQL_PID: Developer
+          MSSQL_SA_PASSWORD: 'SqlServer12!'
+        ports:
+          - 1433:1433
+
+    permissions:
+      contents: read
+      id-token: write
+
+    env:
+      MSSQL_TEST_URL: >-
+        mssql+pyodbc_mssql://sa:SqlServer12!@127.0.0.1:1433/tempdb?driver=ODBC+Driver+18+for+SQL+Server&Encrypt=yes&TrustServerCertificate=yes
+
+    steps:
+      - name: Install Microsoft ODBC Driver 18 and sqlcmd
+        run: |
+          curl -sSL https://packages.microsoft.com/config/ubuntu/24.04/packages-microsoft-prod.deb -o /tmp/packages-microsoft-prod.deb
+          sudo dpkg -i /tmp/packages-microsoft-prod.deb
+          sudo apt-get update
+          sudo ACCEPT_EULA=Y apt-get install -y msodbcsql18 mssql-tools18 unixodbc-dev
+
+      # The SQL Server image does not publish a Docker HEALTHCHECK. Probe it
+      # through the same network/driver path used by the tests instead.
+      - name: Wait for SQL Server readiness
+        run: |
+          for attempt in {1..60}; do
+            if /opt/mssql-tools18/bin/sqlcmd \
+              -S 127.0.0.1,1433 \
+              -U sa \
+              -P 'SqlServer12!' \
+              -C \
+              -Q 'SELECT 1'; then
+              exit 0
+            fi
+            echo "SQL Server not ready (attempt ${attempt}/60)"
+            sleep 2
+          done
+          docker logs "${{ job.services.mssql.id }}"
+          exit 1
+
+      - uses: level12/coppy/gh-actions/nox-run@main
+        with:
+          nox-session: pytest
+
+      - uses: codecov/codecov-action@v5
+        with:
+          use_oidc: true

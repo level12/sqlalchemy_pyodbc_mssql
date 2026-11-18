@@ -1,0 +1,13 @@
+# .coveragerc to control coverage.py
+[run]
+branch = True
+omit =
+    src/sqlalchemy_pyodbc_mssql/version.py
+
+source =
+    src/sqlalchemy_pyodbc_mssql
+    tests/sqlalchemy_pyodbc_mssql_tests
+
+
+[html]
+directory = tmp/coverage-html
